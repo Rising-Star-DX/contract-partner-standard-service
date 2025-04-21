@@ -42,7 +42,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV PATH="/opt/libreoffice25.2/program:${PATH}"
 
 # Expose the port the app will run on
-EXPOSE 8080
+EXPOSE 8081
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "/app/app.jar", "--spring.profiles.active=prod"]
