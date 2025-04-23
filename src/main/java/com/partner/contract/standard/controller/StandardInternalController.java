@@ -1,12 +1,11 @@
 package com.partner.contract.standard.controller;
 
+import com.partner.contract.standard.dto.StandardCountsResponseDto;
 import com.partner.contract.standard.service.StandardService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -15,8 +14,13 @@ import java.util.Map;
 public class StandardInternalController {
     private final StandardService standardService;
 
-    @GetMapping("/categories/check/{categoryId}")
+    @GetMapping("/categories/{categoryId}/exists")
     public Map<String, Boolean> existsByCategory(@PathVariable Long categoryId) {
         return Map.of("exists", standardService.existsByCategory(categoryId));
+    }
+
+    @GetMapping("/count-by-category")
+    public List<StandardCountsResponseDto> getStandardCountByCategory() {
+        return standardService.findStandardCountByCategoryId();
     }
 }

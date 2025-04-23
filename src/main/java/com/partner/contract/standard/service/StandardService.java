@@ -262,4 +262,8 @@ public class StandardService {
     public Boolean existsByCategory(Long categoryId) {
         return standardRepository.existsByCategoryId(categoryId);
     }
+
+    public List<StandardCountsResponseDto> findStandardCountByCategoryId() {
+        return standardRepository.countByCategoryId();
+    }
 }

@@ -3,6 +3,7 @@ package com.partner.contract.standard.repository;
 import com.partner.contract.common.enums.AiStatus;
 import com.partner.contract.standard.domain.Standard;
 import com.partner.contract.standard.dto.StandardContentResponseDto;
+import com.partner.contract.standard.dto.StandardCountsResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -38,4 +39,7 @@ public interface StandardRepository extends JpaRepository<Standard, Long> {
     List<StandardContentResponseDto> findstandardContentResponseByStandardId(@Param("id") Long id);
 
     Boolean existsByCategoryId(Long categoryId);
+
+    @Query("select new com.partner.contract.standard.dto.StandardCountsResponseDto(s.categoryId, count(s.categoryId)) from Standard s group by s.categoryId")
+    List<StandardCountsResponseDto> countByCategoryId();
 }
