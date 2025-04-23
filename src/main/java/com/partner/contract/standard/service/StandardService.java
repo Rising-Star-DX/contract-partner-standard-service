@@ -6,11 +6,13 @@ import com.partner.contract.common.enums.FileStatus;
 import com.partner.contract.common.enums.FileType;
 import com.partner.contract.common.service.FileConversionService;
 import com.partner.contract.common.service.S3Service;
+import com.partner.contract.common.utils.DocumentStatusUtil;
 import com.partner.contract.global.exception.error.ApplicationException;
 import com.partner.contract.global.exception.error.ErrorCode;
 import com.partner.contract.standard.domain.Standard;
-import com.partner.contract.standard.dto.StandardListResponseDto;
-import com.partner.contract.standard.dto.StandardResponseDto;
+import com.partner.contract.standard.domain.StandardContent;
+import com.partner.contract.standard.dto.*;
+import com.partner.contract.standard.repository.StandardContentRepository;
 import com.partner.contract.standard.repository.StandardRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,6 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class StandardService {
     private final StandardRepository standardRepository;
+    private final StandardContentRepository standardContentRepository;
     private final StandardAnalysisAsyncService standardAnalysisAsyncService;
     private final RestTemplate restTemplate;
     private final S3Service s3Service;
@@ -60,9 +64,40 @@ public class StandardService {
 //                .collect(Collectors.toList());
 //    }
 
-//    public StandardResponseDto findStandardById(Long id) {
+//    public List<StandardListResponseDto> findStandardListForAndroid(StandardListRequestForAndroidDto requestForAndroidDto) {
+//        if(!CollectionUtils.isEmpty(requestForAndroidDto.getSortBy())) {
+//            List<String> sortBy = requestForAndroidDto.getSortBy();
+//            List<Boolean> asc = requestForAndroidDto.getAsc();
+//
+//            if(CollectionUtils.isEmpty(asc) || sortBy.size() != asc.size()) {
+//                throw new ApplicationException(ErrorCode.REQUEST_PARAMETER_MISSING_ERROR);
+//            }
+//        }
+//
+//        return standardRepository.findAllByConditions(requestForAndroidDto)
+//                .stream()
+//                .map(StandardListResponseDto::fromEntity)
+//                .collect(Collectors.toList());
+//    }
+
+//    public StandardDetailsResponseDto findStandardById(Long id) {
 //        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
-//        return StandardResponseDto.fromEntity(standard);
+//        return StandardDetailsResponseDto.fromEntity(standard);
+//    }
+
+//    public StandardDetailsResponseForAdminDto findStandardByIdForAdmin(Long id) {
+//        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
+//
+//        return StandardDetailsResponseForAdminDto.builder()
+//                .id(standard.getId())
+//                .name(standard.getName())
+//                .type(standard.getType())
+//                .url(standard.getUrl())
+//                .status(DocumentStatusUtil.determineStatus(standard.getFileStatus(), standard.getAiStatus()))
+//                .createdAt(standard.getCreatedAt())
+//                .categoryName(standard.getCategory().getName())
+//                .standardContentResponseDtoList(standardRepository.findstandardContentResponseByStandardId(standard.getId()))
+//                .build();
 //    }
 
 //    public void deleteStandard(Long id) {
@@ -184,7 +219,43 @@ public class StandardService {
         standardRepository.saveAll(standards);
     }
 
-    public Boolean existsByCategory(Long categoryId) {
-        return standardRepository.existsByCategoryId(categoryId);
-    }
+//    public void modifyStandard(Long id, List<StandardContentRequestDto> contents) {
+//        Standard standard = standardRepository.findById(id)
+//                .orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
+//        for(StandardContentRequestDto content : contents) {
+//            StandardContent standardContent = standardContentRepository.findById(content.getId())
+//                    .orElseThrow(() -> new ApplicationException(ErrorCode.STANDARDCONTENT_NOT_FOUND_ERROR));
+//
+//            standardContent.updateContent(content.getContent());
+//            standardContentRepository.save(standardContent);
+//        }
+//
+//        // 1. txt 파일로 변환
+//        List<String> contentList = standard.getStandardContentList()
+//                .stream()
+//                .map(StandardContent::getContent)
+//                .collect(Collectors.toList());
+//
+//        MultipartFile contentsTxt = fileConversionService.convertStringToTxt(standard.getName().substring(0, standard.getName().lastIndexOf(".")), contentList);
+//
+//        // 2. pdf 변환
+//        MultipartFile file = fileConversionService.convertFileToPdf(contentsTxt, FileType.TXT);
+//
+//        // 3. s3 기존 파일 지우고, 업로드
+//        String url = null;
+//        try {
+//            s3Service.deleteFile(standard.getUrl());
+//            url = s3Service.uploadFile(file, "standards");
+//        } catch (ApplicationException e) {
+//            throw e; // 예외 다시 던지기
+//        }
+//
+//        // 4. url 및 상태 업데이트
+//        standard.updateFileStatus(url, FileStatus.SUCCESS);
+//        standard.updateAiStatus(null);
+//        standardRepository.save(standard).getId();
+//
+//        // 5. ai 분석 요청
+//        startAnalyze(standard.getId());
+//    }
 }

@@ -1,9 +1,14 @@
 package com.partner.contract.standard.controller;
 
+import com.partner.contract.common.enums.FileType;
 import com.partner.contract.global.exception.dto.SuccessResponse;
 import com.partner.contract.global.exception.error.SuccessCode;
+import com.partner.contract.standard.dto.StandardContentRequestDto;
 import com.partner.contract.standard.dto.StandardListResponseDto;
-import com.partner.contract.standard.dto.StandardResponseDto;
+import com.partner.contract.standard.dto.StandardDetailsResponseDto;
+import com.partner.contract.standard.dto.StandardDetailsResponseForAdminDto;
+import com.partner.contract.standard.dto.StandardListRequestForAndroidDto;
+import com.partner.contract.standard.dto.StandardListResponseDto;
 import com.partner.contract.standard.service.StandardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/standards")
-public class StandardApiController {
+public class StandardController {
     private final StandardService standardService;
 
 //    @GetMapping
@@ -28,6 +33,28 @@ public class StandardApiController {
 //        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standards));
 //    }
 
+//    @GetMapping("/android")
+//    public ResponseEntity<SuccessResponse<List<StandardListResponseDto>>> standardListAndroid(
+//            @RequestParam(name = "status", required = false) List<String> status,
+//            @RequestParam(name = "type", required = false) List<FileType> type,
+//            @RequestParam(name = "categoryId", required = false) Long categoryId,
+//            @RequestParam(name = "name", required = false) String name,
+//            @RequestParam(name = "sortBy", required = false) List<String> sortBy,
+//            @RequestParam(name = "asc", required = false) List<Boolean> asc
+//    ) {
+//        StandardListRequestForAndroidDto requestForAndroidDto = StandardListRequestForAndroidDto.builder()
+//                .name(name)
+//                .type(type)
+//                .categoryId(categoryId)
+//                .status(status)
+//                .sortBy(sortBy)
+//                .asc(asc)
+//                .build();
+//
+//        List<StandardListResponseDto> standards = standardService.findStandardListForAndroid(requestForAndroidDto);
+//        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standards));
+//    }
+
     @DeleteMapping("/upload/{id}")
     public ResponseEntity<SuccessResponse<Map<String, Long>>> standardFileUploadCancel(@PathVariable("id") Long id){
         standardService.cancelFileUpload(id);
@@ -35,12 +62,17 @@ public class StandardApiController {
     }
 
 //    @GetMapping("/{id}")
-//    public ResponseEntity<SuccessResponse<StandardResponseDto>> standardById(@PathVariable("id") Long id) {
-//        StandardResponseDto standard = standardService.findStandardById(id);
-//
+//    public ResponseEntity<SuccessResponse<StandardDetailsResponseDto>> standardById(@PathVariable("id") Long id) {
+//        StandardDetailsResponseDto standard = standardService.findStandardById(id);
 //        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standard));
 //    }
-//
+
+//    @GetMapping("/admin/{id}")
+//    public ResponseEntity<SuccessResponse<StandardDetailsResponseForAdminDto>> standardByIdForAdmin(@PathVariable("id") Long id) {
+//        StandardDetailsResponseForAdminDto standard = standardService.findStandardByIdForAdmin(id);
+//        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standard));
+//    }
+
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<SuccessResponse<String>> standardDelete(@PathVariable("id") Long id) {
 //        standardService.deleteStandard(id);
@@ -75,4 +107,10 @@ public class StandardApiController {
 
         return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), Map.of("isCompletion", isCompleted)));
     }
+
+//    @PatchMapping("/{id}")
+//    public ResponseEntity<SuccessResponse<Map<String, Long>>> standardModify(@PathVariable("id") Long id, @RequestBody List<StandardContentRequestDto> contents) {
+//        standardService.modifyStandard(id, contents);
+//        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.UPDATE_SUCCESS.getCode(), SuccessCode.UPDATE_SUCCESS.getMessage(), Map.of("id", id)));
+//    }
 }

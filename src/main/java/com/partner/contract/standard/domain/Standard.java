@@ -49,7 +49,6 @@ public class Standard {
     @Column(nullable = false)
     private Long categoryId;
 
-    @Column(nullable = false)
     private Long memberId;
 
     @OneToMany(mappedBy = "standard", cascade = CascadeType.ALL)
@@ -76,5 +75,9 @@ public class Standard {
 
     public void updateAiStatus(AiStatus aiStatus) {
         this.aiStatus = aiStatus;
+    }
+
+    public void updateTotalPage(Integer totalPage) {
+        this.totalPage = totalPage;
     }
 }

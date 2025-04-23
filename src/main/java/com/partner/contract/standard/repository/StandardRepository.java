@@ -2,17 +2,18 @@ package com.partner.contract.standard.repository;
 
 import com.partner.contract.common.enums.AiStatus;
 import com.partner.contract.standard.domain.Standard;
+import com.partner.contract.standard.dto.StandardContentResponseDto;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import javax.swing.text.html.Option;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Repository
+//public interface StandardRepository extends JpaRepository<Standard, Long>, StandardRepositoryCustom {
 public interface StandardRepository extends JpaRepository<Standard, Long> {
 //    @Query("select s from Standard s join fetch s.category c where s.aiStatus is not null and s.name like %:name% order by s.createdAt desc")
 //    List<Standard> findWithCategoryByNameContainingOrderByCreatedAtDesc(@Param("name") String name);
@@ -27,5 +28,12 @@ public interface StandardRepository extends JpaRepository<Standard, Long> {
 
     Boolean existsByCategoryIdAndAiStatus(Long categoryId, AiStatus aiStatus);
 
-    Boolean existsByCategoryId(Long categoryId);
+    @Query("""
+        select new com.partner.contract.standard.dto.StandardContentResponseDto(
+            sc.id, sc.page, sc.content
+        )
+        from StandardContent sc
+        where sc.standard.id = :id
+""")
+    List<StandardContentResponseDto> findstandardContentResponseByStandardId(@Param("id") Long id);
 }
