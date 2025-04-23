@@ -36,4 +36,6 @@ public interface StandardRepository extends JpaRepository<Standard, Long> {
         where sc.standard.id = :id
 """)
     List<StandardContentResponseDto> findstandardContentResponseByStandardId(@Param("id") Long id);
+
+    Boolean existsByCategoryId(Long categoryId);
 }

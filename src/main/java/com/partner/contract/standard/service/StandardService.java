@@ -258,4 +258,8 @@ public class StandardService {
 //        // 5. ai 분석 요청
 //        startAnalyze(standard.getId());
 //    }
+
+    public Boolean existsByCategory(Long categoryId) {
+        return standardRepository.existsByCategoryId(categoryId);
+    }
 }

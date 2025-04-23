@@ -3,12 +3,7 @@ package com.partner.contract.standard.controller;
 import com.partner.contract.common.enums.FileType;
 import com.partner.contract.global.exception.dto.SuccessResponse;
 import com.partner.contract.global.exception.error.SuccessCode;
-import com.partner.contract.standard.dto.StandardContentRequestDto;
-import com.partner.contract.standard.dto.StandardListResponseDto;
-import com.partner.contract.standard.dto.StandardDetailsResponseDto;
-import com.partner.contract.standard.dto.StandardDetailsResponseForAdminDto;
-import com.partner.contract.standard.dto.StandardListRequestForAndroidDto;
-import com.partner.contract.standard.dto.StandardListResponseDto;
+import com.partner.contract.standard.dto.*;
 import com.partner.contract.standard.service.StandardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +16,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/standards")
-public class StandardController {
+public class StandardApiController {
     private final StandardService standardService;
 
 //    @GetMapping
