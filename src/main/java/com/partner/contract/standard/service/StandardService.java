@@ -9,6 +9,8 @@ import com.partner.contract.common.service.S3Service;
 import com.partner.contract.common.utils.DocumentStatusUtil;
 import com.partner.contract.global.exception.error.ApplicationException;
 import com.partner.contract.global.exception.error.ErrorCode;
+import com.partner.contract.standard.client.CategoryFeignClient;
+import com.partner.contract.standard.client.dto.CategoryNameListResponseDto;
 import com.partner.contract.standard.domain.Standard;
 import com.partner.contract.standard.domain.StandardContent;
 import com.partner.contract.standard.dto.*;
@@ -29,6 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,27 +45,41 @@ public class StandardService {
     private final S3Service s3Service;
     private final FileConversionService fileConversionService;
 
+    private final CategoryFeignClient categoryRepository;
+
     @Value("${secret.flask.ip}")
     private String FLASK_SERVER_IP;
 
-//    public List<StandardListResponseDto> findStandardList(String name, Long categoryId) {
-//        List<Standard> standards;
-//
-//        if(categoryId == null) {
-//            standards = standardRepository.findWithCategoryByNameContainingOrderByCreatedAtDesc(name);
-//        }
-//        else {
-//            categoryRepository.findById(categoryId)
-//                    .orElseThrow(() -> new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND_ERROR));
-//
-//            standards = standardRepository.findStandardListOrderByCreatedAtDesc(name, categoryId);
-//        }
-//
-//        return standards
-//                .stream()
-//                .map(StandardListResponseDto::fromEntity)
-//                .collect(Collectors.toList());
-//    }
+    public List<StandardListResponseDto> findStandardList(String name, Long categoryId) {
+        List<Standard> standards;
+
+        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryRepository.getAllCategoryIdAndName();
+
+        Map<Long, String> categoryIdAndNameMap = allCategoryIdAndName.stream()
+                .collect(Collectors.toMap(CategoryNameListResponseDto::getId, CategoryNameListResponseDto::getName));
+
+        if(categoryId == null) {
+            standards = standardRepository.findByNameContainingOrderByCreatedAtDesc(name);
+        }
+        else {
+            if (!categoryIdAndNameMap.containsKey(categoryId)) { // 카테고리 ID가 존재하지 않는 경우
+                throw new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND_ERROR);
+            }
+
+            standards = standardRepository.findStandardListOrderByCreatedAtDesc(name, categoryId);
+        }
+
+        return standards.stream()
+                .map(standard -> StandardListResponseDto.builder()
+                        .id(standard.getId())
+                        .name(standard.getName())
+                        .type(standard.getType())
+                        .status(DocumentStatusUtil.determineStatus(standard.getFileStatus(), standard.getAiStatus()))
+                        .createdAt(standard.getCreatedAt())
+                        .categoryName(categoryIdAndNameMap.get(standard.getCategoryId()))
+                        .build())
+                .collect(Collectors.toList());
+    }
 
 //    public List<StandardListResponseDto> findStandardListForAndroid(StandardListRequestForAndroidDto requestForAndroidDto) {
 //        if(!CollectionUtils.isEmpty(requestForAndroidDto.getSortBy())) {
@@ -80,25 +97,37 @@ public class StandardService {
 //                .collect(Collectors.toList());
 //    }
 
-//    public StandardDetailsResponseDto findStandardById(Long id) {
-//        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
-//        return StandardDetailsResponseDto.fromEntity(standard);
-//    }
+    public StandardDetailsResponseDto findStandardById(Long id) {
 
-//    public StandardDetailsResponseForAdminDto findStandardByIdForAdmin(Long id) {
-//        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
-//
-//        return StandardDetailsResponseForAdminDto.builder()
-//                .id(standard.getId())
-//                .name(standard.getName())
-//                .type(standard.getType())
-//                .url(standard.getUrl())
-//                .status(DocumentStatusUtil.determineStatus(standard.getFileStatus(), standard.getAiStatus()))
-//                .createdAt(standard.getCreatedAt())
-//                .categoryName(standard.getCategory().getName())
-//                .standardContentResponseDtoList(standardRepository.findstandardContentResponseByStandardId(standard.getId()))
-//                .build();
-//    }
+        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
+
+        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryRepository.getAllCategoryIdAndName();
+
+        Map<Long, String> categoryIdAndNameMap = allCategoryIdAndName.stream()
+                .collect(Collectors.toMap(CategoryNameListResponseDto::getId, CategoryNameListResponseDto::getName));
+
+        return StandardDetailsResponseDto.fromEntity(standard, categoryIdAndNameMap.get(standard.getCategoryId()));
+    }
+
+    public StandardDetailsResponseForAdminDto findStandardByIdForAdmin(Long id) {
+        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
+
+        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryRepository.getAllCategoryIdAndName();
+
+        Map<Long, String> categoryIdAndNameMap = allCategoryIdAndName.stream()
+                .collect(Collectors.toMap(CategoryNameListResponseDto::getId, CategoryNameListResponseDto::getName));
+
+        return StandardDetailsResponseForAdminDto.builder()
+                .id(standard.getId())
+                .name(standard.getName())
+                .type(standard.getType())
+                .url(standard.getUrl())
+                .status(DocumentStatusUtil.determineStatus(standard.getFileStatus(), standard.getAiStatus()))
+                .createdAt(standard.getCreatedAt())
+                .categoryName(categoryIdAndNameMap.get(standard.getCategoryId()))
+                .standardContentResponseDtoList(standardRepository.findstandardContentResponseByStandardId(standard.getId()))
+                .build();
+    }
 
 //    public void deleteStandard(Long id) {
 //        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));

@@ -16,11 +16,11 @@ import java.util.Optional;
 @Repository
 //public interface StandardRepository extends JpaRepository<Standard, Long>, StandardRepositoryCustom {
 public interface StandardRepository extends JpaRepository<Standard, Long> {
-//    @Query("select s from Standard s join fetch s.category c where s.aiStatus is not null and s.name like %:name% order by s.createdAt desc")
-//    List<Standard> findWithCategoryByNameContainingOrderByCreatedAtDesc(@Param("name") String name);
+    @Query("select s from Standard s where s.aiStatus is not null and s.name like %:name% order by s.createdAt desc")
+    List<Standard> findByNameContainingOrderByCreatedAtDesc(@Param("name") String name);
 
-//    @Query("select s from Standard s join fetch s.category c where s.aiStatus is not null and s.name like %:name% and s.category.id = :categoryId order by s.createdAt desc")
-//    List<Standard> findStandardListOrderByCreatedAtDesc(@Param("name") String name, @Param("categoryId") Long categoryId);
+    @Query("select s from Standard s where s.aiStatus is not null and s.name like %:name% and s.categoryId = :categoryId order by s.createdAt desc")
+    List<Standard> findStandardListOrderByCreatedAtDesc(@Param("name") String name, @Param("categoryId") Long categoryId);
 
 //    @Query("select s from Standard s join fetch s.category c where s.id = :id")
 //    Optional<Standard> findWithCategoryById(@Param("id") Long id);

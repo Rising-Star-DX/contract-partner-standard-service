@@ -19,14 +19,14 @@ import java.util.Map;
 public class StandardApiController {
     private final StandardService standardService;
 
-//    @GetMapping
-//    public ResponseEntity<SuccessResponse<List<StandardListResponseDto>>> standardList(
-//            @RequestParam(name = "name", required = false, defaultValue = "") String name,
-//            @RequestParam(name = "category-id", required = false) Long categoryId) {
-//        List<StandardListResponseDto> standards = standardService.findStandardList(name, categoryId);
-//
-//        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standards));
-//    }
+    @GetMapping
+    public ResponseEntity<SuccessResponse<List<StandardListResponseDto>>> standardList(
+            @RequestParam(name = "name", required = false, defaultValue = "") String name,
+            @RequestParam(name = "category-id", required = false) Long categoryId) {
+        List<StandardListResponseDto> standards = standardService.findStandardList(name, categoryId);
+
+        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standards));
+    }
 
 //    @GetMapping("/android")
 //    public ResponseEntity<SuccessResponse<List<StandardListResponseDto>>> standardListAndroid(
@@ -56,17 +56,17 @@ public class StandardApiController {
         return ResponseEntity.ok(SuccessResponse.of(SuccessCode.DELETE_SUCCESS.getCode(), SuccessCode.DELETE_SUCCESS.getMessage(), Map.of("id", id)));
     }
 
-//    @GetMapping("/{id}")
-//    public ResponseEntity<SuccessResponse<StandardDetailsResponseDto>> standardById(@PathVariable("id") Long id) {
-//        StandardDetailsResponseDto standard = standardService.findStandardById(id);
-//        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standard));
-//    }
+    @GetMapping("/{id}")
+    public ResponseEntity<SuccessResponse<StandardDetailsResponseDto>> standardById(@PathVariable("id") Long id) {
+        StandardDetailsResponseDto standard = standardService.findStandardById(id);
+        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standard));
+    }
 
-//    @GetMapping("/admin/{id}")
-//    public ResponseEntity<SuccessResponse<StandardDetailsResponseForAdminDto>> standardByIdForAdmin(@PathVariable("id") Long id) {
-//        StandardDetailsResponseForAdminDto standard = standardService.findStandardByIdForAdmin(id);
-//        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standard));
-//    }
+    @GetMapping("/admin/{id}")
+    public ResponseEntity<SuccessResponse<StandardDetailsResponseForAdminDto>> standardByIdForAdmin(@PathVariable("id") Long id) {
+        StandardDetailsResponseForAdminDto standard = standardService.findStandardByIdForAdmin(id);
+        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.SELECT_SUCCESS.getCode(), SuccessCode.SELECT_SUCCESS.getMessage(), standard));
+    }
 
 //    @DeleteMapping("/{id}")
 //    public ResponseEntity<SuccessResponse<String>> standardDelete(@PathVariable("id") Long id) {
