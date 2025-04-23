@@ -49,11 +49,14 @@ public class Standard {
     @Column(nullable = false)
     private Long categoryId;
 
+    @Column(nullable = false)
+    private Long memberId;
+
     @OneToMany(mappedBy = "standard", cascade = CascadeType.ALL)
     private List<StandardContent> standardContentList;
 
     @Builder
-    public Standard(String name, FileType type, String url, FileStatus fileStatus, AiStatus aiStatus, LocalDateTime createdAt, Integer totalPage, Long categoryId, List<StandardContent> standardContentList) {
+    public Standard(String name, FileType type, String url, FileStatus fileStatus, AiStatus aiStatus, LocalDateTime createdAt, Integer totalPage, Long categoryId, Long memberId, List<StandardContent> standardContentList) {
         this.name = name;
         this.type = type;
         this.url = url;
@@ -62,6 +65,7 @@ public class Standard {
         this.createdAt = createdAt;
         this.totalPage = totalPage;
         this.categoryId = categoryId;
+        this.memberId = memberId;
         this.standardContentList = standardContentList;
     }
 
