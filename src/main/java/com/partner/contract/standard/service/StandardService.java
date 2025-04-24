@@ -45,7 +45,7 @@ public class StandardService {
     private final S3Service s3Service;
     private final FileConversionService fileConversionService;
 
-    private final CategoryFeignClient categoryRepository;
+    private final CategoryFeignClient categoryFeignClient;
 
     @Value("${secret.flask.ip}")
     private String FLASK_SERVER_IP;
@@ -53,7 +53,7 @@ public class StandardService {
     public List<StandardListResponseDto> findStandardList(String name, Long categoryId) {
         List<Standard> standards;
 
-        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryRepository.getAllCategoryIdAndName();
+        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryFeignClient.getAllCategoryIdAndName();
 
         Map<Long, String> categoryIdAndNameMap = allCategoryIdAndName.stream()
                 .collect(Collectors.toMap(CategoryNameListResponseDto::getId, CategoryNameListResponseDto::getName));
@@ -101,7 +101,7 @@ public class StandardService {
 
         Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
 
-        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryRepository.getAllCategoryIdAndName();
+        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryFeignClient.getAllCategoryIdAndName();
 
         Map<Long, String> categoryIdAndNameMap = allCategoryIdAndName.stream()
                 .collect(Collectors.toMap(CategoryNameListResponseDto::getId, CategoryNameListResponseDto::getName));
@@ -112,7 +112,7 @@ public class StandardService {
     public StandardDetailsResponseForAdminDto findStandardByIdForAdmin(Long id) {
         Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
 
-        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryRepository.getAllCategoryIdAndName();
+        List<CategoryNameListResponseDto> allCategoryIdAndName = categoryFeignClient.getAllCategoryIdAndName();
 
         Map<Long, String> categoryIdAndNameMap = allCategoryIdAndName.stream()
                 .collect(Collectors.toMap(CategoryNameListResponseDto::getId, CategoryNameListResponseDto::getName));
@@ -129,69 +129,73 @@ public class StandardService {
                 .build();
     }
 
-//    public void deleteStandard(Long id) {
-//        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
-//
-//        if(standard.getFileStatus() == FileStatus.UPLOADING || standard.getAiStatus() == AiStatus.ANALYZING) {
-//            throw new ApplicationException(ErrorCode.FILE_DELETE_ERROR);
-//        }
-//
-//        String flaskUrl = FLASK_SERVER_IP + "/flask/standards/" + standard.getCategory().getName() + "/" + id;
-//
-//        FlaskResponseDto<String> body;
-//
-//        try {
-//            // Flask에 API 요청
-//            ResponseEntity<FlaskResponseDto<String>> response = restTemplate.exchange(
-//                    flaskUrl,
-//                    HttpMethod.DELETE,
-//                    null,
-//                    new ParameterizedTypeReference<FlaskResponseDto<String>>() {} // ✅ 제네릭 타입 유지
-//            );
-//
-//            body = response.getBody();
-//
-//        } catch (RestClientException e) {
-//            throw new ApplicationException(ErrorCode.FLASK_SERVER_CONNECTION_ERROR, e.getMessage());
-//        }
-//
-//        try {
-//            if ("success".equals(body.getData())) { // 기준문서 분석 성공
-//                s3Service.deleteFile(standard.getUrl());
-//                standardRepository.delete(standard);
-//            } else {
-//                throw new ApplicationException(ErrorCode.FLASK_DELETE_ERROR);
-//            }
-//        } catch (NullPointerException e) {
-//            throw new ApplicationException(ErrorCode.FLASK_RESPONSE_NULL_ERROR, e.getMessage());
-//        }
-//    }
+    public void deleteStandard(Long id) {
+        Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
 
-//    public Long uploadFile(MultipartFile file, Long categoryId) {
-//
-//        Category category = categoryRepository.findById(categoryId)
-//                .orElseThrow(() -> new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND_ERROR));
-//
-//        Standard standard = Standard.builder()
-//                .name(file.getOriginalFilename())
-//                .type(FileType.fromContentType(file.getContentType()))
-//                .category(category)
-//                .build();
-//
-//        if(standard.getType().isConvertiblePdf()) {
-//            file = fileConversionService.convertFileToPdf(file, standard.getType());
-//        }
-//
-//        // S3 파일 저장
-//        String url = null;
-//        try {
-//            url = s3Service.uploadFile(file, "standards");
-//        } catch (ApplicationException e) {
-//            throw e; // 예외 다시 던지기
-//        }
-//        standard.updateFileStatus(url, FileStatus.SUCCESS);
-//        return standardRepository.save(standard).getId();
-//    }
+        if(standard.getFileStatus() == FileStatus.UPLOADING || standard.getAiStatus() == AiStatus.ANALYZING) {
+            throw new ApplicationException(ErrorCode.FILE_DELETE_ERROR);
+        }
+
+        CategoryNameListResponseDto categoryNameListResponseDto = categoryFeignClient.getCategoryIdAndName(standard.getCategoryId());
+
+        String flaskUrl = FLASK_SERVER_IP + "/flask/standards/" + categoryNameListResponseDto.getName() + "/" + id;
+
+        FlaskResponseDto<String> body;
+
+        try {
+            // Flask에 API 요청
+            ResponseEntity<FlaskResponseDto<String>> response = restTemplate.exchange(
+                    flaskUrl,
+                    HttpMethod.DELETE,
+                    null,
+                    new ParameterizedTypeReference<FlaskResponseDto<String>>() {} // ✅ 제네릭 타입 유지
+            );
+
+            body = response.getBody();
+
+        } catch (RestClientException e) {
+            throw new ApplicationException(ErrorCode.FLASK_SERVER_CONNECTION_ERROR, e.getMessage());
+        }
+
+        try {
+            if ("success".equals(body.getData())) { // Flask 서버에서 기준문서 삭제 성공
+                s3Service.deleteFile(standard.getUrl());
+                standardRepository.delete(standard);
+            } else {
+                throw new ApplicationException(ErrorCode.FLASK_DELETE_ERROR);
+            }
+        } catch (NullPointerException e) {
+            throw new ApplicationException(ErrorCode.FLASK_RESPONSE_NULL_ERROR, e.getMessage());
+        }
+    }
+
+    public Long uploadFile(MultipartFile file, Long categoryId) {
+
+        CategoryNameListResponseDto category = categoryFeignClient.getCategoryIdAndName(categoryId);
+        if (category == null) {
+            throw new ApplicationException(ErrorCode.CATEGORY_NOT_FOUND_ERROR);
+        }
+
+        Standard standard = Standard.builder()
+                .name(file.getOriginalFilename())
+                .type(FileType.fromContentType(file.getContentType()))
+                .categoryId(categoryId)
+                .build();
+
+        if(standard.getType().isConvertiblePdf()) {
+            file = fileConversionService.convertFileToPdf(file, standard.getType());
+        }
+
+        // S3 파일 저장
+        String url = null;
+        try {
+            url = s3Service.uploadFile(file, "standards");
+        } catch (ApplicationException e) {
+            throw e; // 예외 다시 던지기
+        }
+        standard.updateFileStatus(url, FileStatus.SUCCESS);
+        return standardRepository.save(standard).getId();
+    }
 
 //    @Async
 //    @Transactional
