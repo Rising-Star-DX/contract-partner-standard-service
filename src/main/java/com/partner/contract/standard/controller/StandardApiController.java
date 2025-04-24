@@ -86,15 +86,15 @@ public class StandardApiController {
                 Map.of("id", id)));
     }
 
-//    @PatchMapping("/analysis/{id}")
-//    public ResponseEntity<SuccessResponse<Map<String, Long>>> standardAnalysis(@PathVariable("id") Long id){
-//
-//        standardService.startAnalyze(id);
-//
-//        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.ANALYSIS_REQUEST_ACCEPTED.getCode(),
-//                SuccessCode.ANALYSIS_REQUEST_ACCEPTED.getMessage(),
-//                Map.of("id", id)));
-//    }
+    @PatchMapping("/analysis/{id}")
+    public ResponseEntity<SuccessResponse<Map<String, Long>>> standardAnalysis(@PathVariable("id") Long id){
+
+        standardService.startAnalyze(id);
+
+        return ResponseEntity.ok(SuccessResponse.of(SuccessCode.ANALYSIS_REQUEST_ACCEPTED.getCode(),
+                SuccessCode.ANALYSIS_REQUEST_ACCEPTED.getMessage(),
+                Map.of("id", id)));
+    }
 
     @GetMapping("/analysis/check/{id}")
     public ResponseEntity<SuccessResponse<Map<String, Boolean>>> standardCheckAnalysisCompletion(@PathVariable("id") Long id){

@@ -22,8 +22,8 @@ public interface StandardRepository extends JpaRepository<Standard, Long> {
     @Query("select s from Standard s where s.aiStatus is not null and s.name like %:name% and s.categoryId = :categoryId order by s.createdAt desc")
     List<Standard> findStandardListOrderByCreatedAtDesc(@Param("name") String name, @Param("categoryId") Long categoryId);
 
-//    @Query("select s from Standard s join fetch s.category c where s.id = :id")
-//    Optional<Standard> findWithCategoryById(@Param("id") Long id);
+    @Query("select s from Standard s where s.id = :id")
+    Optional<Standard> findStandardById(@Param("id") Long id);
 
     List<Standard> findByAiStatusAndCreatedAtBefore(AiStatus aiStatus, LocalDateTime fiveMinutesAgo);
 

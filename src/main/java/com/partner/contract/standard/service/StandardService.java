@@ -197,26 +197,26 @@ public class StandardService {
         return standardRepository.save(standard).getId();
     }
 
-//    @Async
-//    @Transactional
-//    public void startAnalyze(Long id) {
-//        Standard standard = standardRepository.findWithCategoryById(id)
-//                .orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
-//
-//        if (standard.getFileStatus() != FileStatus.SUCCESS) {
-//            throw new ApplicationException(ErrorCode.MISSING_FILE_FOR_ANALYSIS);
-//        } else if (standard.getAiStatus() == AiStatus.FAILED || standard.getAiStatus() == AiStatus.SUCCESS) { // 이미 분석이 완료된 경우
-//            throw new ApplicationException(ErrorCode.AI_ANALYSIS_ALREADY_COMPLETED);
-//        } else if (standard.getAiStatus() == AiStatus.ANALYZING) { // 이미 분석 중인 경우
-//            throw new ApplicationException(ErrorCode.AI_ANALYSIS_ALREADY_STARTED);
-//        }
-//
-//        standard.updateAiStatus(AiStatus.ANALYZING);
-//        standardRepository.save(standard);
-//
-//        // 비동기 분석 요청
-//        standardAnalysisAsyncService.analyze(standard, standard.getCategory().getName());
-//    }
+    @Async
+    @Transactional
+    public void startAnalyze(Long id) {
+        Standard standard = standardRepository.findStandardById(id)
+                .orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
+
+        if (standard.getFileStatus() != FileStatus.SUCCESS) {
+            throw new ApplicationException(ErrorCode.MISSING_FILE_FOR_ANALYSIS);
+        } else if (standard.getAiStatus() == AiStatus.FAILED || standard.getAiStatus() == AiStatus.SUCCESS) { // 이미 분석이 완료된 경우
+            throw new ApplicationException(ErrorCode.AI_ANALYSIS_ALREADY_COMPLETED);
+        } else if (standard.getAiStatus() == AiStatus.ANALYZING) { // 이미 분석 중인 경우
+            throw new ApplicationException(ErrorCode.AI_ANALYSIS_ALREADY_STARTED);
+        }
+
+        standard.updateAiStatus(AiStatus.ANALYZING);
+        standardRepository.save(standard);
+
+        // 비동기 분석 요청
+        standardAnalysisAsyncService.analyze(standard, categoryFeignClient.getCategoryIdAndName(standard.getCategoryId()).getName());
+    }
 
     public void cancelFileUpload(Long id) {
         Standard standard = standardRepository.findById(id).orElseThrow(() -> new ApplicationException(ErrorCode.STANDARD_NOT_FOUND_ERROR));
