@@ -85,28 +85,28 @@ public class FileConversionService {
         return libreOffice.exists() && libreOffice.canExecute();
     }
 
-//    public MultipartFile convertStringToTxt(String name, List<String> contents) {
-//        try {
-//            StringBuilder sb = new StringBuilder();
-//            for (int i = 0; i < contents.size(); i++) {
-//                sb.append(contents.get(i));
-//                if (i < contents.size() - 1) {
-//                    sb.append("\f");
-//                }
-//            }
-//
-//            byte[] contentBytes = sb.toString().getBytes("UTF-8");
-//
-//            return new MockMultipartFile(
-//                    "file",
-//                    name + ".txt",
-//                    "text/plain",
-//                    new ByteArrayInputStream(contentBytes)
-//            );
-//
-//        } catch (IOException e) {
-//            throw new ApplicationException(ErrorCode.FILE_PROCESSING_ERROR);
-//        }
-//    }
+    public MultipartFile convertStringToTxt(String name, List<String> contents) {
+        try {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < contents.size(); i++) {
+                sb.append(contents.get(i));
+                if (i < contents.size() - 1) {
+                    sb.append("\f");
+                }
+            }
+
+            byte[] contentBytes = sb.toString().getBytes("UTF-8");
+
+            return new MockMultipartFile(
+                    "file",
+                    name + ".txt",
+                    "text/plain",
+                    new ByteArrayInputStream(contentBytes)
+            );
+
+        } catch (IOException e) {
+            throw new ApplicationException(ErrorCode.FILE_PROCESSING_ERROR);
+        }
+    }
 }
 
